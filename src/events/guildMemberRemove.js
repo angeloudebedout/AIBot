@@ -141,9 +141,9 @@ export default {
         try {
             const userApplications = await getUserApplications(member.client, guild.id, user.id);
             if (userApplications && userApplications.length > 0) {
-                for (const app of userApplications) {
-                    await deleteApplication(member.client, guild.id, app.id, user.id);
-                }
+                await Promise.all(
+                    userApplications.map(app => deleteApplication(member.client, guild.id, app.id, user.id))
+                );
                 logger.debug(`Removed ${userApplications.length} applications for user ${user.id} in guild ${guild.id}`);
             }
         } catch (error) {
