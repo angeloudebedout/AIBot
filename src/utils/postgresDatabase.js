@@ -73,15 +73,23 @@ class PostgreSQLDatabase {
                     await this.createTables();
 
                     try {
-                        const columnCheck = await this.pool.query(`
-                            SELECT column_name 
+                        const guildsTable = assertAllowlistedIdentifier(
+                            pgConfig.tables.guilds,
+                            this.allowedTableIdentifiers,
+                            'Guilds table identifier'
+                        );
+                        const safeGuildsTable = quoteIdentifier(guildsTable);
+
+                        const columnCheck = await this.pool.query(
+                            `SELECT column_name
                             FROM information_schema.columns 
-                            WHERE table_name = 'guilds' AND column_name = 'counters'
-                        `);
+                            WHERE table_name = $1 AND column_name = 'counters'`,
+                            [guildsTable]
+                        );
 
                         if (columnCheck.rows.length === 0) {
                             await this.pool.query(`
-                                ALTER TABLE ${pgConfig.tables.guilds} 
+                                ALTER TABLE ${safeGuildsTable}
                                 ADD COLUMN counters JSONB DEFAULT '[]'
                             `);
                             logger.info('✅ Added counters column to guilds table');
@@ -1126,17 +1134,25 @@ class PostgreSQLDatabase {
                         [parsedKey.guildId]
                     );
                     
-                    const columnCheck = await this.pool.query(`
-                        SELECT column_name 
+                    const guildsTable = assertAllowlistedIdentifier(
+                        pgConfig.tables.guilds,
+                        this.allowedTableIdentifiers,
+                        'Guilds table identifier'
+                    );
+                    const safeGuildsTable = quoteIdentifier(guildsTable);
+
+                    const columnCheck = await this.pool.query(
+                        `SELECT column_name
                         FROM information_schema.columns 
-                        WHERE table_name = '${pgConfig.tables.guilds}' AND column_name = 'counters'
-                    `);
+                        WHERE table_name = $1 AND column_name = 'counters'`,
+                        [guildsTable]
+                    );
                     
                     if (columnCheck.rows.length === 0) {
                         logger.warn('Counters column does not exist, attempting to add it...');
                         try {
                             await this.pool.query(`
-                                ALTER TABLE ${pgConfig.tables.guilds} 
+                                ALTER TABLE ${safeGuildsTable}
                                 ADD COLUMN counters JSONB DEFAULT '[]'
                             `);
                             logger.info('✅ Added counters column to guilds table');
