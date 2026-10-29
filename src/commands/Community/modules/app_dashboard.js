@@ -1193,10 +1193,10 @@ async function handleDeleteApplication(confirmSubmit, selectedRoleId, guildId, r
         const allApplications = await getApplications(client, guildId);
         const applicationsToDelete = allApplications.filter(app => app.roleId === selectedRoleId);
 
-        // Delete each application
-        for (const app of applicationsToDelete) {
-            await deleteApplication(client, guildId, app.id, app.userId);
-        }
+        // Delete each application concurrently
+        await Promise.all(
+            applicationsToDelete.map(app => deleteApplication(client, guildId, app.id, app.userId))
+        );
 
         // Send success message
         await confirmSubmit.reply({
