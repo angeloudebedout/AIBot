@@ -35,19 +35,20 @@ export default {
                 );
             }
 
-            let allUserData = [];
-
-            for (const key of allKeys) {
+            const userDataPromises = allKeys.map(async (key) => {
                 const userId = key.replace(prefix, "");
                 const userData = await client.db.get(key);
 
                 if (userData) {
-                    allUserData.push({
+                    return {
                         userId: userId,
                         net_worth: (userData.wallet || 0) + (userData.bank || 0),
-                    });
+                    };
                 }
-            }
+                return null;
+            });
+
+            const allUserData = (await Promise.all(userDataPromises)).filter(Boolean);
 
             allUserData.sort((a, b) => b.net_worth - a.net_worth);
 
