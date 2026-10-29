@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { getColor } from '../../config/bot.js';
 import { SlashCommandBuilder, MessageFlags } from 'discord.js';
 import { createEmbed, errorEmbed, successEmbed, infoEmbed, warningEmbed } from '../../utils/embeds.js';
@@ -65,29 +66,26 @@ export default {
             if (includeSymbols) chars += symbols;
             
             let password = '';
-            const randomValues = new Uint32Array(length);
-            crypto.getRandomValues(randomValues);
-            
             for (let i = 0; i < length; i++) {
-                const randomIndex = randomValues[i] % chars.length;
+                const randomIndex = crypto.randomInt(chars.length);
                 password += chars[randomIndex];
             }
             
             if (includeUppercase && !/[A-Z]/.test(password)) {
-                const randomIndex = Math.floor(Math.random() * length);
-                const randomUpper = uppercase[Math.floor(Math.random() * uppercase.length)];
+                const randomIndex = crypto.randomInt(length);
+                const randomUpper = uppercase[crypto.randomInt(uppercase.length)];
                 password = password.substring(0, randomIndex) + randomUpper + password.substring(randomIndex + 1);
             }
             
             if (includeNumbers && !/[0-9]/.test(password)) {
-                const randomIndex = Math.floor(Math.random() * length);
-                const randomNumber = numbers[Math.floor(Math.random() * numbers.length)];
+                const randomIndex = crypto.randomInt(length);
+                const randomNumber = numbers[crypto.randomInt(numbers.length)];
                 password = password.substring(0, randomIndex) + randomNumber + password.substring(randomIndex + 1);
             }
             
             if (includeSymbols && !/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)) {
-                const randomIndex = Math.floor(Math.random() * length);
-                const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+                const randomIndex = crypto.randomInt(length);
+                const randomSymbol = symbols[crypto.randomInt(symbols.length)];
                 password = password.substring(0, randomIndex) + randomSymbol + password.substring(randomIndex + 1);
             }
             
